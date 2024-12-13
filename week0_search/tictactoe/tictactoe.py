@@ -39,10 +39,12 @@ def result(board, action):
     Returns the board that results from making move (i, j) on the board.
     """
     r, c = action
-    if board[r][c] is EMPTY:
-        new_board = [row.copy() for row in board]
-        new_board[r][c] = player(board)
-        return new_board
+    if action not in actions(board) or board[r][c] is not EMPTY:
+        raise Exception("Invalid action")
+
+    new_board = [row.copy() for row in board]
+    new_board[r][c] = player(board)
+    return new_board
 
 
 def winner(board):
