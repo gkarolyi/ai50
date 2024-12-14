@@ -173,6 +173,7 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
+
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -191,28 +192,33 @@ class MinesweeperAI():
         self.moves_made.add(cell)
         self.mark_safe(cell)
 
-        neighbours = self.get_neighbours(cell)
-        sentence = Sentence(neighbours, count)
-        self.knowledge.append(sentence)
+        unknown_cells = set()
+        for neighbour in self.get_neighbours(cell):
+            if neighbour in self.mines:
+                count -= 1
+            elif neighbour not in self.safes and neighbour not in self.mines:
+                unknown_cells.add(neighbour)
 
-        known_mines, known_safes = set(), set()
-        for sentence in self.knowledge:
-            known_mines.update(sentence.known_mines())
-            known_safes.update(sentence.known_safes())
+        if len(unknown_cells) > 0:
+            unknown_neighbours = Sentence(unknown_cells, count)
+            self.knowledge.append(unknown_neighbours)
+
+        inferred_sentences = []
+        for s1 in self.knowledge:
+            for s2 in self.knowledge:
+                if s1 in s2 and s1 != s2:
+                    new_sentence = Sentence(s2.cells - s1.cells, s2.count - s1.count)
+                    if len(new_sentence.cells) > 0 and new_sentence not in self.knowledge and new_sentence not in inferred_sentences:
+                        inferred_sentences.append(new_sentence)
+        self.knowledge.extend(inferred_sentences)
+
+        known_mines = {mine for sentence in self.knowledge for mine in sentence.known_mines()}
+        known_safes = {safe for sentence in self.knowledge for safe in sentence.known_safes()}
 
         for mine in known_mines:
             self.mark_mine(mine)
         for safe in known_safes:
             self.mark_safe(safe)
-
-        for s1 in self.knowledge:
-            for s2 in self.knowledge:
-                if s1 in s2:
-                    new_sentence = Sentence(s2.cells - s1.cells, s2.count - s1.count)
-                    for mine in new_sentence.known_mines():
-                        self.mark_mine(mine)
-                    for safe in new_sentence.known_safes():
-                        self.mark_safe(safe)
 
     def make_safe_move(self):
         """
