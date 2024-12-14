@@ -102,7 +102,7 @@ class Sentence():
         return f"{self.cells} = {self.count}"
 
     def __contains__(self, other):
-        return self.cells.issubset(other.cells) and self.count <= other.count
+        return self.cells.issubset(other.cells)
 
     def known_mines(self):
         """
