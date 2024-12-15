@@ -166,16 +166,13 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                 heredity_probability[parent] = p
 
             if gene_count == 2:
-                joint_probability *= heredity_probability[mother]
-                joint_probability *= heredity_probability[father]
+                gene_probability = heredity_probability[mother] * heredity_probability[father]
             elif gene_count == 1:
-                joint_probability *= (heredity_probability[mother]
-                                      * (1 - heredity_probability[father]))
-                joint_probability += (heredity_probability[father]
-                                      * (1 - heredity_probability[mother]))
+                gene_probability = (1 - heredity_probability[mother]) * heredity_probability[father] + heredity_probability[mother] * (1 - heredity_probability[father])
             else:
-                joint_probability *= (1 - heredity_probability[mother])
-                joint_probability *= (1 - heredity_probability[father])
+                gene_probability = (1 - heredity_probability[mother]) * (1 - heredity_probability[father])
+
+            joint_probability *= gene_probability
 
         joint_probability *= PROBS["trait"][gene_count][has_trait]
 
