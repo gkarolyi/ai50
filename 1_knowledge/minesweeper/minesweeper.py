@@ -1,7 +1,6 @@
 import itertools
 import random
 
-
 class Minesweeper():
     """
     Minesweeper game representation
@@ -206,21 +205,16 @@ class MinesweeperAI():
         for s1 in self.knowledge:
             for s2 in self.knowledge:
                 if s1 in s2 and s1 != s2:
-                    new_sentence = Sentence(s2.cells - s1.cells, s2.count - s1.count)
-                    if len(new_sentence.cells) > 0 and new_sentence not in self.knowledge:
-                        self.knowledge.append(new_sentence)
+                    inferred_sentence = Sentence(s2.cells - s1.cells, s2.count - s1.count)
+                    if inferred_sentence not in self.knowledge:
+                        self.knowledge.append(inferred_sentence)
 
-        while True:
-            for sentence in self.knowledge:
-                new_mines = {mine for mine in sentence.known_mines() if mine not in self.mines}
-                new_safes = {safe for safe in sentence.known_safes() if safe not in self.safes}
-                for mine in new_mines:
-                    self.mark_mine(mine)
-                for safe in new_safes:
-                    self.mark_safe(safe)
-                if new_mines or new_safes:
-                    continue
-            break
+        mines = [mine for sentence in self.knowledge for mine in sentence.known_mines()]
+        safes = [safe for sentence in self.knowledge for safe in sentence.known_safes()]
+        for mine in mines:
+            self.mark_mine(mine)
+        for safe in safes:
+            self.mark_safe(safe)
 
 
     def make_safe_move(self):
