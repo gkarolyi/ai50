@@ -1,6 +1,7 @@
 import itertools
 import random
 
+
 class Minesweeper():
     """
     Minesweeper game representation
@@ -100,6 +101,9 @@ class Sentence():
     def __str__(self):
         return f"{self.cells} = {self.count}"
 
+    def __hash__(self):
+        return hash((frozenset(self.cells), self.count))
+
     def known_mines(self):
         """
         Returns the set of all cells in self.cells known to be mines.
@@ -169,7 +173,6 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
-
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -195,23 +198,22 @@ class MinesweeperAI():
             elif neighbour not in self.safes and neighbour not in self.mines:
                 unknown_cells.add(neighbour)
 
-        if len(unknown_cells) > 0:
-            unknown_neighbours = Sentence(unknown_cells, count)
+        unknown_neighbours = Sentence(unknown_cells, count)
+        if len(unknown_neighbours.cells) > 0 and unknown_neighbours not in self.knowledge:
             self.knowledge.append(unknown_neighbours)
 
+        self.knowledge = list(set(self.knowledge))
         for s1 in self.knowledge:
             for s2 in self.knowledge:
+                for mine in s2.known_mines().copy():
+                    self.mark_mine(mine)
+                for safe in s2.known_safes().copy():
+                    self.mark_safe(safe)
+
                 if s1.cells.issubset(s2.cells):
                     inferred_sentence = Sentence(s2.cells - s1.cells, s2.count - s1.count)
                     if inferred_sentence not in self.knowledge:
                         self.knowledge.append(inferred_sentence)
-
-        for sentence in self.knowledge:
-            for mine in sentence.known_mines().copy():
-                self.mark_mine(mine)
-            for safe in sentence.known_safes().copy():
-                self.mark_safe(safe)
-
 
     def make_safe_move(self):
         """
