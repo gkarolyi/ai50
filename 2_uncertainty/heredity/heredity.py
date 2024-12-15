@@ -141,6 +141,14 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     """
     joint_probability = 1
 
+    def calculate_gene_probability(gene_count, parents):
+        if gene_count == 2:
+            return parents[mother] * parents[father]
+        elif gene_count == 1:
+            return (1 - parents[mother]) * parents[father] + parents[mother] * (1 - parents[father])
+        else:
+            return (1 - parents[mother]) * (1 - parents[father])
+
     for person in people:
         gene_count = (
             2 if person in two_genes else
@@ -155,24 +163,16 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         if mother is None and father is None:
             joint_probability *= (PROBS["gene"][gene_count])
         else:
-            heredity_probability = {mother: 0, father: 0}
-
-            for parent in heredity_probability:
+            heredity_probabilities = {mother: 0, father: 0}
+            for parent in heredity_probabilities:
                 p = (
                     1 - PROBS["mutation"] if parent in two_genes else
                     0.5 if parent in one_gene else
                     PROBS["mutation"]
                 )
-                heredity_probability[parent] = p
+                heredity_probabilities[parent] = p
 
-            if gene_count == 2:
-                gene_probability = heredity_probability[mother] * heredity_probability[father]
-            elif gene_count == 1:
-                gene_probability = (1 - heredity_probability[mother]) * heredity_probability[father] + heredity_probability[mother] * (1 - heredity_probability[father])
-            else:
-                gene_probability = (1 - heredity_probability[mother]) * (1 - heredity_probability[father])
-
-            joint_probability *= gene_probability
+            joint_probability *= calculate_gene_probability(gene_count, heredity_probabilities)
 
         joint_probability *= PROBS["trait"][gene_count][has_trait]
 
