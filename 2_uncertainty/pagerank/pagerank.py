@@ -57,7 +57,19 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    page_probabilities = {key: 0 for key in corpus}
+
+    if len(corpus[page]) == 0:
+        for key in page_probabilities:
+            page_probabilities[key] = 1 / len(corpus.keys())
+    else:
+        p = (1 - damping_factor) / len(corpus.keys())
+        for key in page_probabilities:
+            page_probabilities[key] = p
+            if key in corpus[page]:
+                page_probabilities[key] += damping_factor / len(corpus[page])
+
+    return page_probabilities
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,7 +81,15 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    pagerank = {key: 0 for key in corpus}
+    sample_key = random.choice(list(corpus.keys()))
+
+    for _ in range(n):
+        transition = transition_model(corpus, sample_key, damping_factor)
+        pagerank[sample_key] += 1 / n
+        sample_key = random.choices(list(transition.keys()), weights=transition.values(), k=1)[0]
+
+    return pagerank
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,7 +101,29 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    current_pagerank = {key: 1 / len(corpus) for key in corpus}
+    new_pagerank = {}
+
+    while True:
+        for linked_page in corpus:
+            choice_probability = 0
+            for linking_page in corpus:
+                if linked_page in corpus[linking_page]:
+                    choice_probability += current_pagerank[linking_page] / len(corpus[linking_page])
+                elif len(corpus[linking_page]) == 0:
+                    choice_probability += current_pagerank[linking_page] / len(corpus)
+
+            new_pagerank[linked_page] = (damping_factor * choice_probability)
+            new_pagerank[linked_page] += (1 - damping_factor) / len(corpus)
+
+        rank_diffs = [new_pagerank[page] - current_pagerank[page] for page in current_pagerank]
+
+        if max(rank_diffs) < 0.001:
+            break
+        else:
+            current_pagerank = new_pagerank.copy()
+
+    return current_pagerank
 
 
 if __name__ == "__main__":
