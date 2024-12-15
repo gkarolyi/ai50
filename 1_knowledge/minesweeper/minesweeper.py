@@ -100,9 +100,6 @@ class Sentence():
     def __str__(self):
         return f"{self.cells} = {self.count}"
 
-    def __contains__(self, other):
-        return self.cells.issubset(other.cells)
-
     def known_mines(self):
         """
         Returns the set of all cells in self.cells known to be mines.
@@ -204,17 +201,16 @@ class MinesweeperAI():
 
         for s1 in self.knowledge:
             for s2 in self.knowledge:
-                if s1 in s2 and s1 != s2:
+                if s1.cells.issubset(s2.cells):
                     inferred_sentence = Sentence(s2.cells - s1.cells, s2.count - s1.count)
                     if inferred_sentence not in self.knowledge:
                         self.knowledge.append(inferred_sentence)
 
-        mines = [mine for sentence in self.knowledge for mine in sentence.known_mines()]
-        safes = [safe for sentence in self.knowledge for safe in sentence.known_safes()]
-        for mine in mines:
-            self.mark_mine(mine)
-        for safe in safes:
-            self.mark_safe(safe)
+        for sentence in self.knowledge:
+            for mine in sentence.known_mines().copy():
+                self.mark_mine(mine)
+            for safe in sentence.known_safes().copy():
+                self.mark_safe(safe)
 
 
     def make_safe_move(self):
