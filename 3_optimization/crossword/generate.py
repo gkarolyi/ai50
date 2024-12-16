@@ -140,7 +140,7 @@ class CrosswordCreator():
         while arcs:
             x, y = arcs.pop()
             if self.revise(x, y):
-                if self.domains[x] is None:
+                if len(self.domains[x]) == 0:
                     return False
                 else:
                     arcs.extend((n, x) for n in self.crossword.neighbors(x) if n != y)
@@ -159,6 +159,9 @@ class CrosswordCreator():
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
+        if len(assignment.keys()) != len(set(assignment.values())):
+            return False
+
         for variable in assignment:
             word = assignment[variable]
             if len(word) != variable.length:
