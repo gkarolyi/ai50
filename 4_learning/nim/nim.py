@@ -107,7 +107,7 @@ class NimAI():
         """
         Update the Q-value for the state `state` and the action `action`
         given the previous Q-value `old_q`, a current reward `reward`,
-        and an estiamte of future rewards `future_rewards`.
+        and an estimate of future rewards `future_rewards`.
 
         Use the formula:
 
@@ -130,8 +130,9 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
+        actions = list(Nim.available_actions(state))
         return max(
-            [q for ((s, a), q) in self.q.items() if s == tuple(state)],
+            [self.get_q_value(state, action) for action in actions],
             default=0
         )
 
@@ -150,7 +151,15 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        raise NotImplementedError
+        max_reward = self.best_future_reward(state)
+        actions = list(Nim.available_actions(state))
+
+        if epsilon and random.random() < self.epsilon:
+            return random.choice(actions)
+        else:
+            return random.choice(
+                [action for action in actions if self.get_q_value(state, action) == max_reward]
+            )
 
 
 def train(n):
