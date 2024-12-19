@@ -14,28 +14,11 @@ V -> "arrived" | "came" | "chuckled" | "had" | "lit" | "said" | "sat"
 V -> "smiled" | "tell" | "were"
 """
 
-# holmes sat in the armchair in the home
-# N V P Det N P Det N
-# NP (N) VP (V) PP (P) NP (Det N) PP (P) NP (Det N)
-
-# Holmes sat down and lit his pipe
-# N V Adv Conj V Det N
-# NP (N) VP (V) Adv Conj VP (V) NP (Det N)
-
-# She never said a word
-# N Adv V Det N
-# NP (N) Adv VP (V) Det N Conj NP (N) VP (V) P Det N Adv
-
-# holmes sat in the armchair in the home his companion arrived at.
-# N V P Det N P Det N Det N V P
-# NP (N) VP (V) PP (P) NP (Det N) PP (P) NP (Det N) NP (Det N) VP (V) PP (P)
-
-
 NONTERMINALS = """
 S -> NP VP | S Conj S
 NP -> N | Det NP | Adj NP | NP PP
 PP -> P NP | P S
-VP -> V | V NP | V PP | V NP PP | VP Conj VP | VP Adv | Adv VP
+VP -> V | V NP | V PP | V NP PP | VP Conj VP | Adv VP
 """
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
@@ -51,8 +34,7 @@ def main():
 
     # Otherwise, get sentence as input
     else:
-        # s = input("Sentence: ")
-        s = "holmes sat in the armchair in the home"
+        s = input("Sentence: ")
 
     # Convert input into list of words
     s = preprocess(s)
