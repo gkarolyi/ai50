@@ -21,6 +21,8 @@ def main():
 
     # Get image arrays and labels for all image files
     images, labels = load_data(sys.argv[1])
+    print(f"Images: {len(images)}")
+    print(f"Labels: {len(labels)}")
 
     # Split data into training and testing sets
     labels = tf.keras.utils.to_categorical(labels)
@@ -58,7 +60,17 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    raise NotImplementedError
+    images = []
+    labels = []
+
+    for category in os.listdir(data_dir):
+        for file in os.listdir(os.path.join(data_dir, category)):
+            filename = os.path.join(data_dir, category, file)
+            image = cv2.imread(filename)
+            images.append(cv2.resize(image, (IMG_WIDTH, IMG_HEIGHT)))
+            labels.append(int(category))
+
+    return images, labels
 
 
 def get_model():
@@ -67,7 +79,34 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Input(shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+
+        tf.keras.layers.Conv2D(32, (2, 2), activation="relu", padding='same'),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+        tf.keras.layers.Dropout(0.2),
+
+        tf.keras.layers.Conv2D(64, (2, 2), activation="relu", padding='same'),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+        tf.keras.layers.Dropout(0.3),
+
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(96, activation="relu"),
+        tf.keras.layers.Dropout(0.4),
+        tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+    ])
+
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    model.summary()
+
+    return model
 
 
 if __name__ == "__main__":
